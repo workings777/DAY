@@ -147,15 +147,27 @@
     const monthEl = document.getElementById('d-month');
     const dayEl   = document.getElementById('d-day');
 
-    yearEl.addEventListener('input', () => {
-      if (yearEl.value.length >= 4) monthEl.focus();
-      calc();
-    });
-    monthEl.addEventListener('input', () => {
-      if (monthEl.value.length >= 2) dayEl.focus();
-      calc();
-    });
-    dayEl.addEventListener('input', calc);
+    // 덮어쓰기 모드: 포커스 시 플래그 세팅, 첫 키입력에 기존 값 지우고 시작
+    function setupOverwrite(el, maxLen, nextEl) {
+      let overwrite = false;
+      el.addEventListener('focus', () => { overwrite = true; });
+      el.addEventListener('keydown', (e) => {
+        if (overwrite && e.key >= '0' && e.key <= '9') {
+          el.value = '';
+          overwrite = false;
+        }
+      });
+      el.addEventListener('input', () => {
+        if (el.value.length >= maxLen) {
+          if (nextEl) nextEl.focus();
+        }
+        calc();
+      });
+    }
+
+    setupOverwrite(yearEl,  4, monthEl);
+    setupOverwrite(monthEl, 2, dayEl);
+    setupOverwrite(dayEl,   2, null);
 
     document.querySelectorAll('input[name="type"]').forEach(r => r.addEventListener('change', calc));
 
